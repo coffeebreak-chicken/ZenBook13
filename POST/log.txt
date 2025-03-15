@@ -1,0 +1,42 @@
+C:\Users\Student\Documents\POST>python Server_PYTHON.py
+serving at port 8000
+127.0.0.1 - - [10/Mar/2025 00:47:15] POST /
+Host: localhost:8000
+Connection: keep-alive
+Content-Length: 16
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36
+Accept: */*
+sec-ch-ua: "Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+sec-ch-ua-mobile: ?0
+Origin: null
+Sec-Fetch-Site: cross-site
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ja,en-US;q=0.9,en;q=0.8
+
+
+127.0.0.1 - - [10/Mar/2025 00:47:15] POSTデータ: name=John&age=30
+127.0.0.1 - - [10/Mar/2025 00:47:15] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [10/Mar/2025 00:47:25] POST /
+Host: localhost:8000
+Connection: keep-alive
+Content-Length: 16
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36
+Accept: */*
+sec-ch-ua: "Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+sec-ch-ua-mobile: ?0
+Origin: null
+Sec-Fetch-Site: cross-site
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ja,en-US;q=0.9,en;q=0.8
+
+
+127.0.0.1 - - [10/Mar/2025 00:47:25] POSTデータ: name=John&age=30
+127.0.0.1 - - [10/Mar/2025 00:47:25] "POST / HTTP/1.1" 200 -
