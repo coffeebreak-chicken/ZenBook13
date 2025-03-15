@@ -1,0 +1,35 @@
+通常、`X-Requested-With`ヘッダーはAJAXリクエストを識別するために使われ、その値として「XMLHttpRequest」が入ります。しかし、URLが`X-Requested-With`の値に入ることは通常の使い方ではありません。もしそのようなケースが発生した場合、特定のアプリケーションやカスタム実装が行われている可能性があります。
+
+以下はその理由とケーススタディです：
+
+### 1. **誤ったヘッダーの設定**
+HTTPヘッダーが誤って設定されるケースでは、`X-Requested-With`の値としてURLが含まれる可能性があります。これはエラーや設定ミスにより発生します。
+
+### 2. **カスタム実装**
+特定のアプリケーションやカスタム実装が、リクエストの元のURLを識別するために`X-Requested-With`ヘッダーを使用することがあります。例えば、トラッキングや解析目的でその情報を含める場合です。
+
+### 3. **セキュリティ対策**
+一部のセキュリティ対策として、リクエストがどこから発せられたかを識別するために、`X-Requested-With`ヘッダーにURLを入れることがあります。これにより、リクエスト元を確認し、不正なリクエストを防ぐことが可能です。
+
+#### 例：カスタム実装の場合
+以下に、URLを`X-Requested-With`ヘッダーの値として設定する例を示します：
+
+```javascript
+$.ajax({
+    url: 'https://example.com/api/data',
+    type: 'POST',
+    contentType: 'application/json; charset=utf-8',
+    data: JSON.stringify({ name: 'John', age: 30 }),
+    headers: {
+        'X-Requested-With': window.location.href  // URLを値として設定
+    }
+}).done(function(response, status, xhr) {
+    console.log('AJAXリクエストが成功しました:', response);
+}).fail(function(xhr, status, error) {
+    console.error('AJAXリクエスト中にエラーが発生しました:', error);
+});
+```
+
+この例では、`window.location.href`を使用して現在のURLを取得し、それを`X-Requested-With`ヘッダーに設定しています。
+
+何か他に質問があれば教えてください。

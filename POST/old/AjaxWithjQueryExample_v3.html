@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AJAX with async/await Example</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#postButton').click(async function() {
+                try {
+                    const response = await $.ajax({
+                        url: 'https://postman-echo.com/post',
+                        method: 'POST',
+                        data: { name: 'John', age: 30 }
+                    });
+                    console.log('POSTリクエストが成功しました: ', response);
+                    $('#response').html(`<pre>${JSON.stringify(response, null, 2)}</pre>`);
+                } catch (error) {
+                    alert('POSTリクエスト中にエラーが発生しました。');
+                    console.log('エラー: ', error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <button id="postButton">POSTデータを送信する</button>
+    <pre id="response">ここにレスポンスが表示されます。</pre>
+</body>
+</html>

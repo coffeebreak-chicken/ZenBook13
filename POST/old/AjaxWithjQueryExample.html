@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AJAX with jQuery Example</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#postButton').click(function() {
+                $.ajax({
+                    url: 'http://localhost:8080',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8', // JSONデータとして送信
+                    data: JSON.stringify({ name: 'John', age: 30 }), // データをJSON文字列に変換
+                    headers: {
+                        'Custom-Header': 'CustomHeaderValue', // カスタムヘッダーを追加
+                        'X-Requested-With': 'XMLHttpRequest'  // X-Requested-Withヘッダーを追加(XMLHttpRequestであることを明示)
+                    }
+                }).done(function(response, status, xhr) {
+                    //alert('POSTリクエストが成功しました。');
+                    console.log('POSTリクエストが成功しました: ', response);
+                    
+                    $('#responseHeader').html(`<pre>"headers": \n${response.headers}</pre>`);
+                    
+                    // 見やすく整形して表示
+                    $('#responseBody').html(`<pre>"body": \n${JSON.stringify(JSON.parse(response.body), null, 2)}</pre>`);
+                    console.log('ステータスコード: ', xhr.status);
+                    console.log('レスポンスヘッダー: ', xhr.getAllResponseHeaders());
+                }).fail(function(xhr, status, error) {
+                    alert('POSTリクエスト中にエラーが発生しました。');
+                    console.log('ステータスコード: ', xhr.status);
+                    console.log('レスポンスヘッダー: ', xhr.getAllResponseHeaders());
+                    console.log('エラーメッセージ: ', error);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <button id="postButton">POSTデータを送信する</button>
+    <pre id="responseHeader">ここにレスポンスヘッダーが表示されます。</pre>
+    
+    <pre id="responseBody">ここにレスポンスボディが表示されます。</pre>
+</body>
+</html>
