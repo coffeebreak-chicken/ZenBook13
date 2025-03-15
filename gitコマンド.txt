@@ -1,0 +1,64 @@
+githubとの連携
+
+・任意の場所で.git作成
+git init
+
+
+・「.git/HEAD」ファイルの内容を以下のように変更
+変更前：ref: refs/heads/master
+変更後：ref: refs/heads/main
+※.git内のHEADファイル
+
+・現在のリモートを確認（まだ無いはず）
+git remote -v
+
+・リモートリポジトリを設定（new urlにgithubのリポジトリURL)
+git remote add [リモートリポジトリ名前] [URL]
+git remote add origin [URL]
+今回：git remote add origin https://github.com/coffeebreak-chicken/ZenBook13
+※リポジトリ名とは違うのでoriginでいい
+
+※新しいリモートURLに変更する
+git remote set-url [リモートリポジトリ名前] {new url}
+git remote set-url origin {new url}
+
+・ステージに追加
+git add {フォルダ/ファイル}
+今回：git add RunJava_bat/.
+
+▼▼▼必要な場合のみ実施（今回スキップ）▼▼▼
+・gitユーザー名とメアド設定
+git config --global user.name "Mint Lina"
+git config --global user.email "MintLinux@git.com"
+
+
+・ssh通信へ変更
+git remote set-url origin {new url}
+今回：git remote set-url origin git@github.com:coffeebreak-chicken/Mint.git
+
+
+・ssh鍵作成
+・手元（クライアント）側を先に用意
+https://www.kagoya.jp/howto/it-glossary/develop/github_ssh/
+▲▲▲必要な場合のみ実施（今回スキップ）▲▲▲
+
+
+・コミット
+git commit -m “コミットコメント”
+今回：git commit -m "新規作成"
+
+
+・プッシュ
+git push [リモート名] [ブランチ名]
+git push origin main
+今回：git push main main
+
+★GitHubにReadMeを作成して、リモートの方が先にすすんだ場合
+git pull origin main --rebase
+今回；git pull main main --rebase
+
+git rebase origin/main
+今回；git rebase main/main
+
+
+
