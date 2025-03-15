@@ -1,0 +1,33 @@
+import keyboard
+import threading
+
+# グローバル変数
+mapped_input = ''
+
+# input関数をラップする関数
+def custom_input(prompt=''):
+    print(prompt, end='', flush=True)
+    global mapped_input
+
+    # スレッドを使ってキーボード入力を監視
+    def key_mapper():
+        while True:
+            event = keyboard.read_event()
+            if event.event_type == keyboard.KEY_DOWN and event.name == 'a':
+                # 'a'キーが押されたら'm'にマッピング
+                mapped_input += 'm'
+            elif event.event_type == keyboard.KEY_DOWN and event.name == 'enter':
+                break
+
+    # スレッド開始
+    thread = threading.Thread(target=key_mapper)
+    thread.start()
+
+    # スレッド終了を待つ
+    thread.join()
+
+    return mapped_input
+
+# カスタムinput関数を使用
+user_input = custom_input("入力してください: ")
+print(f"入力された値: {user_input}")
