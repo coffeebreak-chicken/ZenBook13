@@ -10,7 +10,6 @@
   
   
   
-  
   <!-- ▼▼▼本文▼▼▼ -->
   <body>
 	  <header id="header">
@@ -39,12 +38,9 @@
 	      </div>
 	      <!-- ▲▲▲エンコード結果▲▲▲ -->
 	  </form>
-
-
-
-	  <br><br>
-
-
+	  <br>
+	  <br>
+	  
 	  <h3>デコード</h3>
 	  <form id="decode_form" action="#">
 	      <p>デコードする文字列を入力</p>
@@ -53,6 +49,7 @@
 	      <input type="button" onclick="decode()" value="デコード">
 
 	      <br><br>
+	      <!-- ▼▼▼デコード結果▼▼▼ -->
 	      <div style="line-height: 0;">
 		      <p>予約文字：エンコードしない 【encodeURI()】</p>
 		      <textarea name="area1" style="width:800px; height:100px;" cols="40" rows="8" id="decode_output3"></textarea>
@@ -62,6 +59,7 @@
 		      <textarea name="area1" style="width:800px; height:100px;" cols="40" rows="8" id="decode_output4"></textarea>
 		      <input type="button" onclick="copy_decoded4()" value="クリップボードにコピー">
 		  </div>
+	      <!-- ▲▲▲デコード結果▲▲▲ -->
 	  </form>
 
   <body>
@@ -69,13 +67,6 @@
 
 
 
-
-
-
-
-  
-  
-  
   <!-- ▼▼▼JavaScript▼▼▼ -->
   <script>
     <!-- ▽▽▽エンコード▽▽▽ -->
@@ -109,26 +100,33 @@
       // 出力フォームの内容を取得
       var outputForm1 = document.getElementById("encode_output1");
       // クリップボードにコピー
+      // navigator.clipboard.writeText(outputForm1.textContent);
       outputForm1.select();
       document.execCommand("Copy");
     }
-    function copy2(){
+    function copy_encoded2(){
       // 出力フォームの内容を取得
-      const outputForm2 = document.getElementById("encode_output2");
+      var outputForm2 = document.getElementById("encode_output2");
       // クリップボードにコピー
-      navigator.clipboard.writeText(outputForm2.textContent);
+      // navigator.clipboard.writeText(outputForm2.textContent);
+      outputForm2.select();
+      document.execCommand("Copy");
     }
-    function copy3(){
+    function copy_decoded3(){
       // 出力フォームの内容を取得
-      const outputForm3 = document.getElementById("decode_output3");
+      var outputForm3 = document.getElementById("decode_output3");
       // クリップボードにコピー
-      navigator.clipboard.writeText(outputForm3.textContent);
+      // navigator.clipboard.writeText(outputForm3.textContent);
+      outputForm3.select();
+      document.execCommand("Copy");
     }
-    function copy4(){
+    function copy_decoded4(){
       // 出力フォームの内容を取得
-      const outputForm4 = document.getElementById("decode_output4");
+      var outputForm4 = document.getElementById("decode_output4");
       // クリップボードにコピー
-      navigator.clipboard.writeText(outputForm4.textContent);
+      // navigator.clipboard.writeText(outputForm4.textContent);
+      outputForm3.select();
+      document.execCommand("Copy");
     }
     <!-- ▲▲▲クリップボードにコピー▲▲▲ -->
     
