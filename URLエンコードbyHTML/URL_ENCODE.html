@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+  <!-- ▼▼▼ヘッド▼▼▼ -->
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="widtd=device-widtd, initial-scale=1">
+  </head>
+  <!-- ▲▲▲ヘッド▲▲▲ -->
+  
+  
+  
+  
+  <body>
+  <!-- ▼▼▼本文▼▼▼ -->
+    <header id="header">
+    <h1>URLエンコード</h1>
+    </header>
+
+
+    <!-- ▽▽▽エンコード▽▽▽ -->
+    <form id="encode_form" action="#">
+      <p>エンコードする文字列を入力</p>
+      <textarea name="area1" style="width:800px; height:100px;" cols="40" rows="8"<input type="text" id="encode_input">ｵﾜﾘ</textarea>
+      <br>
+      <input type="button" onclick="encode()" value="エンコード">
+
+      <br><br>
+      <!-- ▼▼▼エンコード結果▼▼▼ -->
+      <div style="line-height: 0;">
+      予約文字：エンコードしない 【encodeURI()】 
+      <h4><span style="color: #47885e"><p id="encode_output1"></p></span></h4>
+      
+      
+      予約文字：エンコードする 【encodeURIComponent】 
+      <h4><span style="color: #028760;"><p id="encode_output2"></p></span></h4>
+      
+      <p><font size="-1">※予約文字「. ;,/?:@&=+$#」など</font></p>
+      </div>
+      <!-- ▲▲▲エンコード結果▲▲▲ -->
+    </form>
+    <!-- △△△エンコード△△△ -->
+
+
+
+
+    <br><br>
+    <!-- ▽▽▽デコード▽▽▽ -->
+    <form id="decode_form" action="#">
+      <p>デコードする文字列を入力</p>
+      <textarea name="area1" style="width:800px; height:100px;" cols="40" rows="8"<input type="text" id="decode_input"></textarea>
+      <br>
+      <input type="button" onclick="decode()" value="デコード">
+
+      <br><br>
+      <div style="line-height: 0;">
+      予約文字：エンコードしない 【encodeURI()】 
+      <h4><span style="color: #47885e"><p id="decode_output3"></p></span></h4>
+      予約文字：エンコードする 【encodeURIComponent】 
+      <h4><span style="color: #028760;"><p id="decode_output4"></p></span></h4>
+    </form>
+    </div>
+    <!-- △△△デコード△△△ -->
+
+  <!-- ▲▲▲本文▲▲▲ -->
+  <body>
+
+
+
+
+
+
+
+  
+  
+  
+  <!-- ▼▼▼JavaScript▼▼▼ -->
+  <script>
+    <!-- ▽▽▽エンコード▽▽▽ -->
+    function encode(){
+      // 入力フォームの内容を取得
+      const inputForm = document.getElementById("encode_input");
+      const inputContext1 = encodeURI(inputForm.value);
+      const inputContext2 = encodeURIComponent(inputForm.value);
+      // 入力内容を画面に出力
+      document.getElementById("encode_output1").innerHTML = inputContext1;
+      document.getElementById("encode_output2").innerHTML = inputContext2;
+    }
+    <!-- △△△エンコード△△△ -->
+    
+    
+    function decode(){
+      // 入力フォームの内容を取得
+      const inputForm = document.getElementById("decode_input");
+      const inputContext3 = decodeURI(inputForm.value);
+      const inputContext4 = decodeURIComponent(inputForm.value);
+      // 入力内容を画面に出力
+      document.getElementById("decode_output3").innerHTML = inputContext3;
+      document.getElementById("decode_output4").innerHTML = inputContext4;
+    }
+    
+    
+    
+  </script>
+  <!-- ▲▲▲JavaScript▲▲▲ -->
+</html>
