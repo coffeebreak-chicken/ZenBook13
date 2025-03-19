@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>applicationx-www-form-urlencoded形式</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // ボタンのクリックイベント
+            $('#postButton').click(function() {
+                // formを取得してシリアライズ
+                const serializedData = $('#myForm').serialize();
+                
+                // URLの取得
+                let url = $('#url').val();
+
+                // Ajaxリクエスト
+                $.ajax({
+                    url: url, // POST先URL
+                    type: "POST",
+                    data: serializedData, // シリアライズされたデータ
+                    headers: { // ヘッダーを追加
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    contentType: 'application/x-www-form-urlencoded', // applicationx-www-form-urlencoded形式=デフォルトのコンテンツ形式
+                    processData: false // 明示的にデータの加工をさせない
+                }).done(function(response, status, xhr) {
+                    console.log('POSTリクエストが成功しました: ', response);
+                    // $('#response').html(`<pre>${JSON.stringify(response, null, 2)}</pre>`);
+                    $('#response').text(response); // .text()を使用して平文を挿入
+                    console.log('ステータスコード: ', xhr.status);
+                    console.log('レスポンスヘッダー: ', xhr.getAllResponseHeaders());
+                }).fail(function(xhr, status, error) {
+                    alert('POSTリクエスト中にエラーが発生しました。');
+                    console.log('ステータスコード: ', xhr.status);
+                    console.log('レスポンスヘッダー: ', xhr.getAllResponseHeaders());
+                    console.log('エラーメッセージ: ', error);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- サンプルフォーム -->
+    <input type="hidden" name="url" id="url" value="http://localhost:8080">
+    
+    <form id="myForm">
+        <input type="hidden" name="username" id="username" value="名前を入力">
+        <input type="hidden"  name="email" id="email" value="メールアドレスを入力">
+        <input type="hidden" name="password" id="password" value="パスワードを入力">
+    </form>
+    <button type="button" id="postButton">送信</button>
+    <pre id="response">ここにレスポンスが表示されます。</pre>
+</body>
+</html
