@@ -1,9 +1,9 @@
 @echo off
-rem 文字コード65001（UTF-8）
-chcp 65001
+rem �����R�[�h65001�iUTF-8�j
+rem chcp 65001
 rem chcp 932
 
-rem 遅延環境変数の展開を有効化
+rem �x�����ϐ��̓W�J��L����
 setlocal ENABLEDELAYEDEXPANSION
 
 set DROPFILE=%~1
@@ -11,50 +11,50 @@ rem set DROPFILE_NAME=%~nx1
 set DROPFILE_NAME=%~n1
 set DROPFILE_EXTENSION=%~x1
 
-echo D^&Dされたファイル
+echo D^&D���ꂽ�t�@�C��
 echo %DROPFILE%
 echo %DROPFILE_NAME%
 echo %DROPFILE_EXTENSION%
 
-rem 実行中のバッチファイルの存在するパスを取得
+rem ���s���̃o�b�`�t�@�C���̑��݂���p�X���擾
 set SCRIPT_PATH=%~dp0
 
-rem D&Dではなく、そのまま実行された場合
+rem D&D�ł͂Ȃ��A���̂܂܎��s���ꂽ�ꍇ
 IF [%DROPFILE%] == [] (
-    echo 実行するjavaファイルが指定されていません.
-    echo 所定の場所に格納されているjavaファイルを対象にします.
+    echo ���s����java�t�@�C�����w�肳��Ă��܂���.
+    echo ����̏ꏊ�Ɋi�[����Ă���java�t�@�C����Ώۂɂ��܂�.
 
-    rem 結果を表示
-    echo 実行中のバッチファイルのパス: %SCRIPT_PATH%
+    rem ���ʂ�\��
+    echo ���s���̃o�b�`�t�@�C���̃p�X: %SCRIPT_PATH%
 
-    rem Javaファイル一覧を格納するための変数を初期化
+    rem Java�t�@�C���ꗗ���i�[���邽�߂̕ϐ���������
     set JAVA_FILES=
     
-    rem 指定したパス内のファイルをループで処理
+    rem �w�肵���p�X���̃t�@�C�������[�v�ŏ���
     for %%f in ("%SCRIPT_PATH%*.java") do (
         set JAVA_FILES=!JAVA_FILES! %%f
     )
-    rem Javaファイル一覧を表示
+    rem Java�t�@�C���ꗗ��\��
     if "!JAVA_FILES!"=="" (
-        echo javaファイルは存在しません.
+        echo java�t�@�C���͑��݂��܂���.
         pause
         exit /b
     ) else (
-        rem ファイル一覧を1つずつ処理
+        rem �t�@�C���ꗗ��1������
         for %%a in (!JAVA_FILES!) do (
-            rem コンパイル
+            rem �R���p�C��
             javac -encoding UTF-8 "%%a"
             if %ERRORLEVEL% neq 0 (
-                echo コンパイルに失敗しました.
-                echo コンパイルファイル: "%%a"
+                echo �R���p�C���Ɏ��s���܂���.
+                echo �R���p�C���t�@�C��: "%%a"
                 pause
                 exit /b
             )
             
-            rem 実行するJava名を取得（拡張子を除いたもの）
+            rem ���s����Java�����擾�i�g���q�����������́j
             set CLASS_NAME=%%~na
-            rem java実行
-            echo 実行クラス: !CLASS_NAME!
+            rem java���s
+            echo ���s�N���X: !CLASS_NAME!
             java -Dfile.encoding=UTF-8 -cp %SCRIPT_PATH% !CLASS_NAME!
             pause
             exit /b
@@ -62,22 +62,22 @@ IF [%DROPFILE%] == [] (
     )
 )
 
-rem D&Dされたファイルがjavaファイルでない場合 %~x1
+rem D&D���ꂽ�t�@�C����java�t�@�C���łȂ��ꍇ %~x1
 if not "%DROPFILE_EXTENSION%"==".java" (
-    echo 指定されたファイルはJavaファイルではありません.
+    echo �w�肳�ꂽ�t�@�C����Java�t�@�C���ł͂���܂���.
     pause
     exit /b
 )
 
-rem javaコンパイル
+rem java�R���p�C��
 javac -encoding UTF-8 "%DROPFILE%"
 if %ERRORLEVEL% neq 0 (
-    echo コンパイルに失敗しました.
+    echo �R���p�C���Ɏ��s���܂���.
     pause
     exit /b
 )
 
-rem java実行
+rem java���s
 java -Dfile.encoding=UTF-8 %DROPFILE_NAME%
 pause
 exit /b
