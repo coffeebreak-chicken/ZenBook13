@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>マウスのクリックイベントを検知</title>
+    <style>
+
+		#clickTarget {
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%); /* 🔹 完全に中央へ配置 */
+		    width: 200px; /* 🔹 ボタンサイズ拡大 */
+		    height: 80px; /* 🔹 高さも拡大 */
+		    font-size: 24px; /* 🔹 テキストサイズUP */
+		    font-weight: bold;
+		    background: linear-gradient(45deg, #ff6b6b, #ffb84d);
+		    color: white;
+		    border: none;
+		    border-radius: 12px;
+		    cursor: pointer;
+		    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+		    transition: all 0.3s ease-in-out;
+		}
+
+		#clickTarget:hover {
+		    background: linear-gradient(45deg, #ffb84d, #ff6b6b);
+		    transform: translate(-50%, -50%) scale(1.1); /* 🔹 中央のまま拡大 */
+		    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+		}
+
+		#clickTarget:active {
+		    transform: translate(-50%, -50%) scale(0.95); /* 🔹 クリック時の縮小 */
+		}
+
+    </style>
+</head>
+<body>
+
+    <button id="clickTarget">✨ クリックしてください ✨</button>
+
+</body>
+<script>
+
+    document.getElementById("clickTarget").addEventListener("mousedown", function(event) {
+        console.log(event.button);
+        if (event.button === 0) {
+            console.log("左クリックされました！");
+        } else if (event.button === 1) {
+            console.log("中央ボタン（ホイールクリック）されました！");
+        } else if (event.button === 2) {
+            console.log("右クリックされました！");
+        } else if (event.button === 3) {
+            console.log("戻るボタンがクリックされました！");
+            event.preventDefault(); // 🔹 進むボタンを無効化
+        } else if (event.button === 4) {
+            console.log("進むボタンがクリックされました！");
+            event.preventDefault(); // 🔹 進むボタンを無効化
+        }
+    });
+
+    document.getElementById("clickTarget").addEventListener("contextmenu", function(event) {
+        event.preventDefault(); // 🔹 右クリックのメニュー表示を防ぐ
+    });
+
+</script>
+</html>
