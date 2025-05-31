@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>テーブル編集</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .left {
+            width: 50%;
+        }
+        .right {
+            width: 50%;
+            padding-left: 20px;
+            border-left: 2px solid #ddd;
+        }
+        button {
+            margin-top: 10px;
+        }
+        
+
+        /* テーブルデータを作成ボタンを強調 */
+		#processButton {
+		    background-color: #ffcc00; /* 黄色 */
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #ffaa00; /* 濃いオレンジ枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		/* ダウンロードボタンを水色に */
+		#downloadButton {
+		    background-color: #00aaff; /* 水色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #0077cc; /* 濃い水色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+    </style>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左側: 入力フォーム -->
+        <div class="left">
+		    <h2>情報編集フォーム</h2>
+		    
+		    <label for="nameInput">名前変更:</label>
+		    <input type="text" id="nameInput" placeholder="新しい名前を入力">
+		    <button onclick="updateName()">変更</button>
+		    
+		    <h3>年齢変更:</h3>
+		    <button onclick="updateAge(20)">20に変更</button>
+		    <button onclick="updateAge(30)">30に変更</button>
+    
+		    <h3>テーブルデータを処理:</h3>
+		    <button id="processButton" onclick="processTableName()">テーブルデータを作成</button>
+        </div>
+
+        <!-- 右側: 結果表示 -->
+        <div class="right">
+            <h3>現在のデータ:</h3>
+            <p id="display"></p>
+            
+            <h3>テーブルデータ:</h3>
+            <p id="processedData"></p>
+            
+		    <br>
+		    <button id="downloadButton" onclick="downloadProcessedArray()">ダウンロード</button>
+        </div>
+    </div>
+
+    <script>
+        const header = 'name, age, jusho, tel, date\n';
+        
+        let tableName = {
+            name: 'テスト',
+            age: 40,
+            jusho: '名古屋市　栄',
+            tel: '080-xxxx-xxxx',
+            date: '2025-05-31 23:37:00'
+        };
+        
+        let processedArray;
+
+        function updateName() {
+            const newName = document.getElementById('nameInput').value;
+            if (newName.trim() !== '') {
+                // ちゃんと入力された場合のみ有効（入力された名前が空やスペースでない場合）
+                tableName.name = newName;
+                displayData();
+            }
+        }
+
+        function updateAge(newAge) {
+            tableName.age = newAge;
+            displayData();
+        }
+
+        function processTableName() {
+            // 「""」で囲むかどうかの判定
+            processedArray = Object.values(tableName).map(value =>
+                typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
+                    value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
+                        `"${value}"` );
+            
+            // 「,」でつなぐ
+            processedArray.join(', ');
+            console.log(processedArray);
+
+            document.getElementById('processedData').innerHTML = processedArray;
+        }
+
+        function displayData() {
+            document.getElementById('display').innerHTML = 
+                `名前: ${tableName.name}<br>
+                 年齢: ${tableName.age}<br>
+                 住所: ${tableName.jusho}<br>
+                 電話番号: ${tableName.tal}<br>
+                 日時: ${tableName.date}`;
+        }
+        
+        function downloadProcessedArray() {
+            processTableName();
+            const blob = new Blob([header + processedArray], { type: "text/csv" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "processed_data.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.onload = displayData;
+    </script>
+</body>
+</html>
