@@ -19,7 +19,6 @@
         button {
             margin-top: 10px;
         }
-        
 
         /* テーブルデータを作成ボタンを強調 */
 		#processButton {
@@ -30,6 +29,15 @@
 		    border-radius: 5px;
 		    cursor: pointer;
 		}
+		#processButton10 {
+	    background-color: #ff3333; /* 赤色 */
+	    font-weight: bold;
+	    padding: 10px 15px;
+	    border: 2px solid #cc0000; /* 濃い赤色枠 */
+	    border-radius: 5px;
+	    cursor: pointer;
+	}
+
 
 		/* ダウンロードボタンを水色に */
 		#downloadButton {
@@ -41,7 +49,6 @@
 		    border-radius: 5px;
 		    cursor: pointer;
 		}
-    </style>
     </style>
 </head>
 <body>
@@ -60,6 +67,9 @@
     
 		    <h3>テーブルデータを処理:</h3>
 		    <button id="processButton" onclick="processTableName()">テーブルデータを作成</button>
+    
+		    <h3>テーブルデータを処理:</h3>
+		    <button id="processButton10" onclick="processTableName10()">テーブルデータを作成<br>(10行)</button>
         </div>
 
         <!-- 右側: 結果表示 -->
@@ -72,6 +82,8 @@
             
 		    <br>
 		    <button id="downloadButton" onclick="downloadProcessedArray()">ダウンロード</button>
+		    <br>
+		    <button id="downloadButton" onclick="downloadProcessedArray10()">ダウンロード10</button>
         </div>
     </div>
 
@@ -86,7 +98,8 @@
             date: '2025-05-31 23:37:00'
         };
         
-        let processedArray;
+        let processedArray = [];
+	    let csvContent = ""; 
 
         function updateName() {
             const newName = document.getElementById('nameInput').value;
@@ -103,18 +116,75 @@
         }
 
         function processTableName() {
-            // 「""」で囲むかどうかの判定
-            processedArray = Object.values(tableName).map(value =>
-                typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
-                    value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
-                        `"${value}"` );
-            
-            // 「,」でつなぐ
-            processedArray.join(', ');
+
+            for (const key in tableName) {
+                if (typeof tableName[key] !== "string" ) {
+                    // String型でないものは、「""」で囲まずにそのまま
+                    processedArray.push(tableName[key]);
+                } else if ( tableName[key].includes("/") || tableName[key].includes("-") ){
+                    // タイムスタンプの場合（）も「""」で囲まずにそのまま
+                    processedArray.push(tableName[key]);
+                } else {
+                    // 通常のcharacter系であれば「""」で囲まむ
+                    processedArray.push(`"${tableName[key]}"`);
+                }
+            }
+            // CSVフォーマットに変換
+            processedArray.join(", ");
             console.log(processedArray);
 
             document.getElementById('processedData').innerHTML = processedArray;
         }
+        
+        /*
+		function processTableName10() {
+            let processedArray10 = [];
+		    for (let i = 0; i < 10; i++) {
+		        for (const key in tableName) {
+		            if (typeof tableName[key] !== "string") {
+		                processedArray10.push(tableName[key] + 1); // 数値型は連続した値に
+		            } else if (tableName[key].includes("/") || tableName[key].includes("-")) {
+		                processedArray10.push(tableName[key]); // タイムスタンプはそのまま
+		            } else {
+		                processedArray10.push(`"${tableName[key]}"`); // 文字列型は "" で囲む
+		            }
+		        }
+
+		        csvContent += processedArray10.join(", ") + "\n"; // 1行ずつ追加
+		        processedArray10 = []; // 初期化
+		    }
+		    
+
+		    console.log(csvContent);
+		    document.getElementById('processedData').innerHTML = csvContent;
+		}
+		*/
+		
+		function processTableName10() {
+
+		    for (let i = 0; i < 10; i++) {
+		        // 🔹 `processedArray10` を `for` ループ内で宣言 → 自動的にスコープの外に影響しない
+		        let processedArray10 = [];
+
+		        for (const key in tableName) {
+		            if (typeof tableName[key] !== "string") {
+		                processedArray10.push(tableName[key] + 1); // 数値型は連続した値に
+		            } else if (tableName[key].includes("/") || tableName[key].includes("-")) {
+		                processedArray10.push(tableName[key]); // タイムスタンプはそのまま
+		            } else {
+		                processedArray10.push(`"${tableName[key]}"`); // 文字列型は "" で囲む
+		            }
+		        }
+
+		        csvContent += processedArray10.join(", ") + "\n"; // 1行ずつ追加
+		        // 🔹 `processedArray10 = [];` の再代入が不要！
+		    }
+
+		    console.log(csvContent);
+		    document.getElementById('processedData').innerHTML = csvContent;
+		}
+
+
 
         function displayData() {
             document.getElementById('display').innerHTML = 
@@ -128,6 +198,19 @@
         function downloadProcessedArray() {
             processTableName();
             const blob = new Blob([header + processedArray], { type: "text/csv" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "processed_data.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        function downloadProcessedArray10() {
+            if(csvContent == null) {
+                 processTableName10();
+            } 
+            const blob = new Blob([header + csvContent], { type: "text/csv" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = "processed_data.csv";
