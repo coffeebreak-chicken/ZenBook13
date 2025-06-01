@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>テーブル編集</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .left {
+            width: 50%;
+        }
+        .right {
+            width: 50%;
+            padding-left: 20px;
+            border-left: 2px solid #ddd;
+        }
+        button {
+            margin-top: 10px;
+        }
+        
+
+        /* INSERT文を作成ボタンを強調 */
+		#processButton {
+		    background-color: #ffcc00; /* 黄色 */
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #ffaa00; /* 濃いオレンジ枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		/* ダウンロードボタンを水色に */
+		#downloadButton {
+		    background-color: #00aaff; /* 水色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #0077cc; /* 濃い水色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		/* ダウンロード(10行)ボタンを赤色に */
+		#downloadButton10 {
+			background-color: #ff4444; /* 赤色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #cc0000; /* 濃い赤色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+    </style>
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左側: 入力フォーム -->
+        <div class="left">
+		    <h2>情報編集フォーム</h2>
+		    
+		    <label for="nameInput">名前変更:</label>
+		    <input type="text" id="nameInput" placeholder="新しい名前を入力">
+		    <button onclick="updateName()">変更</button>
+		    
+		    <h3>年齢変更:</h3>
+		    <button onclick="updateAge(20)">20に変更</button>
+		    <button onclick="updateAge(30)">30に変更</button>
+    
+		    <h3>INSERT文を処理:</h3>
+		    <button id="processButton" onclick="processTableName()">INSERT文を作成</button>
+    
+            <h3>INSERT文を処理(10行):</h3>
+            <button id="processButton" onclick="processTableName10()">INSERT文を作成 (10行)</button>
+        </div>
+
+        <!-- 右側: 結果表示 -->
+        <div class="right">
+            <h3>現在のデータ:</h3>
+            <p id="display"></p>
+            
+            <h3>INSERT文:</h3>
+            <p id="processedData"></p>
+            
+            <h3>INSERT文 (10行分):</h3>
+            <p id="processedData10"></p>
+            
+		    <br>
+		    <button id="downloadButton" onclick="downloadProcessedArray()">ダウンロード</button>
+            
+		    <br>
+		    <button id="downloadButton10" onclick="downloadProcessedArray10()">ダウンロード(10行)</button>
+        </div>
+    </div>
+
+    <script>
+        const header = 'name, age, jusho, tel, date\n';
+        
+        let tableName = {
+            name: 'テスト',
+            age: 40,
+            jusho: '名古屋市　栄',
+            tel: '080-xxxx-xxxx',
+            date: '2025-05-31 23:37:00'
+        };
+        
+        let sqlContent = ""; // INSERT文用の文字列
+
+        function updateName() {
+            const newName = document.getElementById('nameInput').value;
+            if (newName.trim() !== '') {
+                // ちゃんと入力された場合のみ有効（入力された名前が空やスペースでない場合）
+                tableName.name = newName;
+                displayData();
+            }
+        }
+
+        function updateAge(newAge) {
+            tableName.age = newAge;
+            displayData();
+        }
+
+        function processTableName() {
+            sqlContent = ""; // 初期化
+            let processedArray;
+            const columns = Object.keys(tableName).join(", "); // カラムを取得
+            
+            // 「""」で囲むかどうかの判定
+            let values = Object.values(tableName).map(value =>
+                typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
+                    value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
+                        `'${value}'` );
+            
+            sqlContent += `INSERT INTO table_name (${columns}) VALUES (${values.join(", ")});`;
+            console.log(sqlContent);
+
+            document.getElementById('processedData').innerText = sqlContent;
+        }
+
+        function processTableName10() {
+            sqlContent = ""; // 初期化
+
+            for (let i = 0; i < 10; i++) {
+                let row = Object.values(tableName).map(value => 
+                    typeof value !== 'string' ? value + i : // 数値型は連続した値に変化
+                        value.includes("/") || value.includes("-") ? `'${value}'` : // タイムスタンプはそのまま
+                            `'${value}'` // 文字列型は '' で囲む（PostgreSQLでは "" ではなく '' を使用）
+                );
+
+                sqlContent += `INSERT INTO table_name (name, age, jusho, tel, date) VALUES (${row.join(", ")});\n`; // INSERT文として結合
+            }
+
+            console.log(sqlContent); // コンソール出力（SQLフォーマット確認）
+            document.getElementById('processedData10').innerText = sqlContent; // 画面表示
+        }
+
+
+        function displayData() {
+            document.getElementById('display').innerHTML = 
+                `名前: ${tableName.name}<br>
+                 年齢: ${tableName.age}<br>
+                 住所: ${tableName.jusho}<br>
+                 電話番号: ${tableName.tal}<br>
+                 日時: ${tableName.date}`;
+        }
+        
+        function downloadProcessedArray() {
+            if (sqlContent == null || sqlContent.trim() === "") {
+                processTableName();
+            }
+            const blob = new Blob([sqlContent], { type: "text/sql" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "TABLE_NAME_INSERT.sql";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+
+        function downloadProcessedArray10() {
+            if (sqlContent == null || sqlContent.trim() === "" 
+                || (sqlContent.match(/\n/g) || []).length < 2) {
+                processTableName10();
+            }
+            const blob = new Blob([sqlContent], { type: "text/sql" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "TABLE_NAME_INSERT.sql";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.onload = displayData;
+    </script>
+</body>
+</html>
