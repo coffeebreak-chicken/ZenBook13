@@ -96,14 +96,16 @@
     </div>
 
     <script>
-        const header = 'name, age, jusho, tel, date\n';
+        const header = 'name, age, jusho, tel, date, animal, flg\n';
         
         let tableName = {
             name: 'テスト',
             age: 40,
             jusho: '名古屋市　栄',
             tel: '080-xxxx-xxxx',
-            date: '2025-05-31 23:37:00'
+            date: '2025-05-31 23:37:00',
+            animal: null,
+            flg: ''
         };
         
         let processedArray;
@@ -126,12 +128,20 @@
         function processTableName() {
             // 「""」で囲むかどうかの判定
             processedArray = Object.values(tableName).map(value =>
-                typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
-                    value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
-                        `"${value}"` );
+                (value == null || (typeof value === 'string' && value.trim() === '')) ? '' : // null型、若しくは、空文字の場合は「空のフィールド」とする
+                    typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
+                        value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
+                            `"${value}"` );
             
             // 「,」でつなぐ
             processedArray.join(', ');
+            
+            // 末尾がnullか空文字の場合は「,」追加
+            if (processedArray.at(-1) == '') {
+                console.log(processedArray.at(-1));
+                console.log('末尾に「,」を追加');
+                processedArray.push("");
+            }
             console.log(processedArray);
 
             document.getElementById('processedData').innerText = processedArray;
@@ -142,12 +152,20 @@
             csvContent = '';
             for (let i = 0; i < 10; i++) {
                 let row = Object.values(tableName).map(value => 
-                    typeof value !== 'string' ? value + i : // 数値型は連続した値に変化させる
-                        value.includes("/") || value.includes("-") ? value : // タイムスタンプはそのまま
-                            `"${value}"` // 文字列型は "" で囲む
+                (value == null || (typeof value === 'string' && value.trim() === '')) ? '' : // null型、若しくは、空文字の場合は「空のフィールド」とする
+                        typeof value !== 'string' ? value + i : // 数値型は連続した値に変化させる
+                            value.includes("/") || value.includes("-") ? value : // タイムスタンプはそのまま
+                                `"${value}"` // 文字列型は "" で囲む
                 );
 
-                csvContent += row.join(", ") + '\n'; // CSV形式で結合
+                
+                // 末尾がnullか空文字の場合は「,」追加
+                if (row.at(-1) == '') {
+                    console.log(row.at(-1));
+                    console.log('末尾に「,」を追加');
+                    row.push("");
+                }
+                csvContent += row.join(",") + '\n'; // CSV形式で結合
             }
 
             console.log(csvContent); // コンソール出力
