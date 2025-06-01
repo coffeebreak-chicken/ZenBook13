@@ -41,6 +41,17 @@
 		    border-radius: 5px;
 		    cursor: pointer;
 		}
+
+		/* ダウンロード(10行)ボタンを赤色に */
+		#downloadButton10 {
+			background-color: #ff4444; /* 赤色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #cc0000; /* 濃い赤色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
     </style>
     </style>
 </head>
@@ -60,6 +71,9 @@
     
 		    <h3>テーブルデータを処理:</h3>
 		    <button id="processButton" onclick="processTableName()">テーブルデータを作成</button>
+    
+            <h3>テーブルデータを処理(10行):</h3>
+            <button id="processButton" onclick="processTableName10()">テーブルデータを作成 (10行)</button>
         </div>
 
         <!-- 右側: 結果表示 -->
@@ -70,8 +84,14 @@
             <h3>テーブルデータ:</h3>
             <p id="processedData"></p>
             
+            <h3>テーブルデータ (10行分):</h3>
+            <p id="processedData10"></p>
+            
 		    <br>
 		    <button id="downloadButton" onclick="downloadProcessedArray()">ダウンロード</button>
+            
+		    <br>
+		    <button id="downloadButton10" onclick="downloadProcessedArray10()">ダウンロード(10行)</button>
         </div>
     </div>
 
@@ -87,6 +107,7 @@
         };
         
         let processedArray;
+        let csvContent = "";
 
         function updateName() {
             const newName = document.getElementById('nameInput').value;
@@ -113,8 +134,26 @@
             processedArray.join(', ');
             console.log(processedArray);
 
-            document.getElementById('processedData').innerHTML = processedArray;
+            document.getElementById('processedData').innerText = processedArray;
         }
+
+        function processTableName10() {
+            
+            csvContent = '';
+            for (let i = 0; i < 10; i++) {
+                let row = Object.values(tableName).map(value => 
+                    typeof value !== 'string' ? value + i : // 数値型は連続した値に変化させる
+                        value.includes("/") || value.includes("-") ? value : // タイムスタンプはそのまま
+                            `"${value}"` // 文字列型は "" で囲む
+                );
+
+                csvContent += row.join(", ") + '\n'; // CSV形式で結合
+            }
+
+            console.log(csvContent); // コンソール出力
+            document.getElementById('processedData10').innerText = csvContent;
+        }
+
 
         function displayData() {
             document.getElementById('display').innerHTML = 
@@ -126,8 +165,24 @@
         }
         
         function downloadProcessedArray() {
-            processTableName();
+            if (processedArray == null) {
+                processTableName();
+            }
             const blob = new Blob([header + processedArray], { type: "text/csv" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "processed_data.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+
+        function downloadProcessedArray10() {
+            if (csvContent == null) {
+                processTableName10();
+            }
+            const blob = new Blob([header + csvContent], { type: "text/csv" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = "processed_data.csv";
