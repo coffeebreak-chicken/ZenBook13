@@ -103,7 +103,9 @@
             age: 40,
             jusho: '名古屋市　栄',
             tel: '080-xxxx-xxxx',
-            date: '2025-05-31 23:37:00'
+            date: '2025-05-31 23:37:00',
+            animal: null,
+            flg: ''
         };
         
         let sqlContent = ""; // INSERT文用の文字列
@@ -129,9 +131,10 @@
             
             // 「""」で囲むかどうかの判定
             let values = Object.values(tableName).map(value =>
-                typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
-                    value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
-                        `'${value}'` );
+                (value == null || (typeof value === 'string' && value.trim() === '')) ? 'NULL' : // null型、若しくは、空文字の場合は「NULL」とする
+                    typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
+                        value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合（）も「""」で囲まずにそのまま
+                            `'${value}'` );
             
             sqlContent += `INSERT INTO table_name (${columns}) VALUES (${values.join(", ")});`;
             console.log(sqlContent);
@@ -144,9 +147,10 @@
 
             for (let i = 0; i < 10; i++) {
                 let row = Object.values(tableName).map(value => 
-                    typeof value !== 'string' ? value + i : // 数値型は連続した値に変化
-                        value.includes("/") || value.includes("-") ? `'${value}'` : // タイムスタンプはそのまま
-                            `'${value}'` // 文字列型は '' で囲む（PostgreSQLでは "" ではなく '' を使用）
+                    (value == null || (typeof value === 'string' && value.trim() === '')) ? 'NULL' : // null型、若しくは、空文字の場合は「NULL」とする
+                        typeof value !== 'string' ? value + i : // 数値型は連続した値に変化
+                            value.includes("/") || value.includes("-") ? `'${value}'` : // タイムスタンプはそのまま
+                                `'${value}'` // 文字列型は '' で囲む（PostgreSQLでは "" ではなく '' を使用）
                 );
 
                 sqlContent += `INSERT INTO table_name (name, age, jusho, tel, date) VALUES (${row.join(", ")});\n`; // INSERT文として結合
