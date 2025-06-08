@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>テーブル編集</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .left {
+            width: 33.33%;
+        }
+        .center {
+            width: 33.33%;
+            padding-left: 10px; /* 真ん中の余白を調整 */
+            padding-right: 10px;
+            border-left: 2px solid #ddd;
+            border-right: 2px solid #ddd;
+        }
+        .right {
+            width: 33.33%;
+            padding-left: 10px;
+        }
+        
+        button {
+            margin-top: 10px;
+        }
+        .codes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列表示 */
+            row-gap: 5px; /* 🔹 行の間隔 */
+            column-gap: 1px; /* 🔹 列の間隔 */
+            padding-left: 20px;
+        }
+        
+
+        /* テーブルデータを作成ボタンを強調 */
+		#processButton {
+		    background-color: #ffcc00; /* 黄色 */
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #ffaa00; /* 濃いオレンジ枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		/* ダウンロードボタンを水色に */
+		#downloadButton {
+		    background-color: #00aaff; /* 水色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #0077cc; /* 濃い水色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		/* ダウンロード(10行)ボタンを赤色に */
+		#downloadButton10 {
+			background-color: #ff4444; /* 赤色 */
+		    color: white;
+		    font-weight: bold;
+		    padding: 10px 15px;
+		    border: 2px solid #cc0000; /* 濃い赤色の枠 */
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+		
+		
+        .tooltip {
+          position: relative;
+          display: inline-block;
+          //cursor: help;
+        }
+        .tooltip::after {
+          content: attr(data-tip);
+          position: absolute;
+          top: -8px; /* 上に少しずらす */
+          left: 100%; /* 要素の右端からスタート */
+          transform: translateY(-100%) translateX(0);
+          background: white;
+          color: black;
+          padding: 2px 6px; /* 少し控えめに */
+          border-radius: 4px;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.2s;
+          z-index: 10;
+          border: 1px solid #ccc;
+          box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+          
+          /* 追加で注釈の見た目を引き締める */
+          font-size: 14px;
+          font-weight: normal;
+          line-height: 1.2;
+        }
+        .tooltip:hover::after {
+          opacity: 1;
+        }
+		
+    </style>
+</head>
+<script>
+    const tableNameHeader = 'year, birth_count, region, prefecture_code, avg_life_expectancy, male_ratio, female_ratio, urban_ratio, rural_ratio, infant_mortality_rate, healthcare_index\n';
+    
+    /*
+    let tableName = {
+        seq:                   100000,
+        year:                  '2020/01/01 12:34:56',
+        birth_count:           530000,
+        region:                'Tokyo',
+        prefecture_code:       '13',
+        avg_life_expectancy:   '76.5',
+        male_ratio:            '51.2',
+        female_ratio:          '48.8',
+        urban_ratio:           '80.1',
+        rural_ratio:           '19.9',
+        infant_mortality_rate: '2.5',
+        healthcare_index:      '78'
+    };
+    */
+    
+    let tableName = {
+        seq:                   '100005',
+        year:                  '2020/01/01 12:34:56',
+        birth_count:           530000,
+        region:                'Tokyo',
+        prefecture_code:       ' ',
+        avg_life_expectancy:   '76.5',
+        male_ratio:            '51.2',
+        female_ratio:          '48.8',
+        urban_ratio:           '80.1',
+        rural_ratio:           '19.9',
+        infant_mortality_rate: '2.5',
+        healthcare_index:       null
+
+    };
+    
+    let processedArray;
+    let csvContent = "";
+
+    function updateName() {
+        const newName = document.getElementById('nameInput').value;
+        if (newName.trim() !== '') {
+            // ちゃんと入力された場合のみ有効（入力された名前が空やスペースでない場合）
+            tableName.name = newName;
+            displayData();
+        }
+    }
+
+    function processTableName() {
+        // 「""」で囲むかどうかの判定
+        processedArray = Object.values(tableName).map(value =>
+            (typeof value === 'string' && value.trim() === '') ? '""' : // 空文字の場合は「空のフィールド」とする
+                (value == null) ? '' : // nullの場合は空欄「,,」とする
+                    typeof value !== 'string' ? value : // String型でないものは、「""」で囲まずにそのまま
+                        value.includes("/") || value.includes("-") ? value : // タイムスタンプの場合はそのまま
+                            `"${value}"` ); // その他は "" で囲む
+        
+        // 「,」でつなぐ
+        processedArray.join(', ');
+        
+        // 末尾がnullの場合は「,」追加
+        if (processedArray.at(-1) == '') {
+            console.log(processedArray.at(-1));
+            console.log('末尾に「,」を追加');
+            processedArray.push("");
+        }
+        console.log(processedArray);
+
+        document.getElementById('processedData').innerText = processedArray;
+    }
+
+    function processTableName10() {
+        
+        for (let i = 0; i < 10; i++) {
+            let row = Object.entries(tableName).map(([key, value]) => 
+                (typeof value === 'string' && value.trim() === '') ? '""' : // 空文字の場合は「空のフィールド」とする
+                    (value == null) ? '' : // nullの場合は空欄「,,」とする
+                        key === 'seq' ? Number(value) + i : // 「シーケンス番号」は連続した値に変化させる
+                            (typeof value === 'string' && (value.includes("/") || value.includes("-"))) ? value : // タイムスタンプはそのまま
+                                `"${value}"` // その他は "" で囲む
+            );
+
+            
+            // 末尾がnullの場合は「,」追加
+            if (row.at(-1) == '') {
+                console.log(row.at(-1));
+                console.log('末尾に「,」を追加');
+                row.push("");
+            }
+            csvContent += row.join(",") + '\n'; // CSV形式で結合
+        }
+
+        console.log(csvContent); // コンソール出力
+        document.getElementById('processedData10').innerText = csvContent;
+    }
+    
+    function downloadProcessedArray() {
+        if (processedArray == null) {
+            processTableName();
+        }
+        const blob = new Blob([tableNameHeader + processedArray], { type: "text/csv" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "processed_data.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+
+    function downloadProcessedArray10() {
+        if (csvContent == null) {
+            processTableName10();
+        }
+        const blob = new Blob([tableNameHeader + csvContent], { type: "text/csv" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "processed_data.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+
+
+    /* 都道府県 */
+    function updatePrefecture() {
+        const prefectureCode = document.getElementById('nameInput').value;
+        if (prefectureCode.trim() !== '') {
+            // ちゃんと入力された場合のみ有効（入力された都道府県コードが空やスペースでない場合）
+            tableName.region = judgePrefecture(prefectureCode);
+            tableName.prefecture_code = prefectureCode;
+            displayData();
+        }
+    }
+
+    function changePrefecture(newPrefectureCode) {
+        tableName.region = judgePrefecture(newPrefectureCode);
+        tableName.prefecture_code = newPrefectureCode;
+        displayData();
+    }
+
+
+    function judgePrefecture(prefectureCode) {
+        const prefectureMap = {
+            1: "北海道", 2: "青森県", 3: "岩手県", 4: "宮城県", 5: "秋田県",
+            6: "山形県", 7: "福島県", 8: "茨城県", 9: "栃木県", 10: "群馬県",
+            11: "埼玉県", 12: "千葉県", 13: "東京都", 14: "神奈川県", 15: "新潟県",
+            16: "富山県", 17: "石川県", 18: "福井県", 19: "山梨県", 20: "長野県",
+            21: "岐阜県", 22: "静岡県", 23: "愛知県", 24: "三重県", 25: "滋賀県",
+            26: "京都府", 27: "大阪府", 28: "兵庫県", 29: "奈良県", 30: "和歌山県",
+            31: "鳥取県", 32: "島根県", 33: "岡山県", 34: "広島県", 35: "山口県",
+            36: "徳島県", 37: "香川県", 38: "愛媛県", 39: "高知県", 40: "福岡県",
+            41: "佐賀県", 42: "長崎県", 43: "熊本県", 44: "大分県", 45: "宮崎県",
+            46: "鹿児島県", 47: "沖縄県"
+        };
+        
+        if (prefectureMap.hasOwnProperty(prefectureCode)) {
+            // 有効な都道府県コードの場合
+            return prefectureMap[code = prefectureCode];
+        } else {
+            // 有効な都道府県コードでない場合
+            alert("無効な都道府県コード: " + prefectureCode + "\n右記の都道府県コードを入力してください。");
+        }
+        //return prefectureMap[code = prefectureCode];
+    }
+
+
+
+    function displayData() {
+        document.getElementById('display').innerHTML = 
+            `シーケンス番号: ${tableName.seq}<br>
+             記録年:            ${tableName.year}<br>
+             出生数:            ${tableName.birth_count}<br>
+             地域:              ${tableName.region}<br>
+             都道府県コード:    ${tableName.prefecture_code}<br>
+             平均寿命:          ${tableName.avg_life_expectancy}<br>
+             男性の割合（%）:   ${tableName.male_ratio}<br>
+             女性の割合（%）:   ${tableName.female_ratio}<br>
+             都市部の比率（%）: ${tableName.urban_ratio}<br>
+             地方部の比率（%）: ${tableName.rural_ratio}<br>
+             乳児死亡率（%）:   ${tableName.infant_mortality_rate}<br>
+             健康医療指数:      ${tableName.healthcare_index}`;
+    }
+
+    window.onload = displayData;
+</script>
+    
+<body>
+    <div class="container">
+        <!-- 左側: 入力フォーム -->
+        <div class="left">
+		    <h2>情報編集フォーム</h2>
+		    
+		    <label for="nameInput">都道府県:</label>
+		    <input type="text" id="nameInput" placeholder="新しい都道府県コードを入力">
+		    <button onclick="updatePrefecture()">変更</button>
+		    
+		    <h2 class="tooltip" data-tip="これは注釈です">都道府県変更:</h2><br>
+		    <button onclick="changePrefecture(23)">愛知県 に変更</button>
+		    <button onclick="changePrefecture(13)">東京都 に変更</button>
+    
+		    <h3>テーブルデータを処理:</h3>
+		    <button id="processButton" onclick="processTableName()">テーブルデータを作成</button>
+    
+            <h3>テーブルデータを処理(10行):</h3>
+            <button id="processButton" onclick="processTableName10()">テーブルデータを作成 (10行)</button>
+        </div>
+
+        <!-- 中央側: 結果表示 -->
+        <div class="center">
+            <h3>現在のデータ:</h3>
+            <p id="display"></p>
+            
+            <h3>テーブルデータ:</h3>
+            <p id="processedData"></p>
+            
+            <h3>テーブルデータ (10行分):</h3>
+            <p id="processedData10"></p>
+            
+		    <br>
+		    <button id="downloadButton" onclick="downloadProcessedArray()">ダウンロード</button>
+            
+		    <br>
+		    <button id="downloadButton10" onclick="downloadProcessedArray10()">ダウンロード(10行)</button>
+        </div>
+
+        <!-- 右側: 都道府県コード表示 -->
+        <div class="right">
+            <h3>都道府県コード:</h3>
+            <div class="codes">
+                <div>01 北海道</div>
+                <div>02 青森県</div>
+                <div>03 岩手県</div>
+                <div>04 宮城県</div>
+                <div>05 秋田県</div>
+                <div>06 山形県</div>
+                <div>07 福島県</div>
+                <div>08 茨城県</div>
+                <div>09 栃木県</div>
+                <div>10 群馬県</div>
+                <div>11 埼玉県</div>
+                <div>12 千葉県</div>
+                <div>13 東京都</div>
+                <div>14 神奈川県</div>
+                <div>15 新潟県</div>
+                <div>16 富山県</div>
+                <div>17 石川県</div>
+                <div>18 福井県</div>
+                <div>19 山梨県</div>
+                <div>20 長野県</div>
+                <div>21 岐阜県</div>
+                <div>22 静岡県</div>
+                <div>23 愛知県</div>
+                <div>24 三重県</div>
+                <div>25 滋賀県</div>
+                <div>26 京都府</div>
+                <div>27 大阪府</div>
+                <div>28 兵庫県</div>
+                <div>29 奈良県</div>
+                <div>30 和歌山県</div>
+                <div>31 鳥取県</div>
+                <div>32 島根県</div>
+                <div>33 岡山県</div>
+                <div>34 広島県</div>
+                <div>35 山口県</div>
+                <div>36 徳島県</div>
+                <div>37 香川県</div>
+                <div>38 愛媛県</div>
+                <div>39 高知県</div>
+                <div>40 福岡県</div>
+                <div>41 佐賀県</div>
+                <div>42 長崎県</div>
+                <div>43 熊本県</div>
+                <div>44 大分県</div>
+                <div>45 宮崎県</div>
+                <div>46 鹿児島県</div>
+                <div>47 沖縄県</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
