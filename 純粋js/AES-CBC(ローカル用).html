@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AES-CBC 暗号化・復号化）</title>
+</head>
+<body>
+
+    <h2>【暗号化文字列（Cryptogram）生成】</h2>
+    <form id="encryptForm">
+        <label for="inputSsoToken">SSOトークン (ビジエネ外部連携ID + ランダム数値18桁 + チェックディジット2桁):</label><br>
+        <input type="text" id="inputSsoToken" value="G6RHMV7I9XL11SGVYEO01OGC8WG540" style="width: 400px;"><br><br>
+
+        <button type="button" onclick="reloadTimeStamp()">更新</button>
+        <label for="inputTimeStamp">タイムスタンプ（YYYYMMDDhhmmss）:</label><br>
+        <input type="text" id="inputTimeStamp" style="width: 400px;"><br><br>
+        
+        <button type="button" onclick="createCryptogram()">暗号化文字列（Cryptogram）を生成</button>
+
+        <h3>実行結果</h3>
+        <p><strong>処理した元のデータ（SSOトークン + タイムスタンプ）:</strong> <span id="inputCryptogram">-</span></p>
+        <p><strong>暗号化文字列（Cryptogram）:</strong> <span id="resCryptogram" style="word-break: break-all; color: blue;">-</span></p>
+    </form>
+
+    <hr>
+
+    <div style="display:flex;">
+        <div style="width:50%;">
+            <h3>【確認用】暗号化フォーム</h3>
+            <form id="encryptForm">
+                <label for="inputText">暗号化する文字列（プレーンテキスト）:</label><br>
+                <input type="text" id="inputText" placeholder="ここに暗号化したい文字を入力" style="width: 400px;"><br><br>
+                <button type="button" onclick="executeEncrypt()">暗号化を実行</button>
+            </form>
+        </div>
+
+        <div style="width:50%;">
+            <h3>【確認用】復号フォーム</h3>
+            <form id="decryptForm">
+                <label for="inputEncryptedBase64">復号する暗号文（Base64形式）:</label><br>
+                <input type="text" id="inputEncryptedBase64" placeholder="ここに復号化したい文字を貼り付け" style="width: 400px;"><br><br>
+                <button type="button" onclick="executeDecrypt()">復号を実行</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>実行結果</h2>
+    <p><strong>処理した元のデータ:</strong> <span id="resOriginal">-</span></p>
+    <p><strong>生成された暗号文 (Base64):</strong> <span id="resEncrypted" style="word-break: break-all; color: blue;">-</span></p>
+    <p><strong>復号された文字列:</strong> <span id="resDecrypted" style="color: green; font-weight: bold;">-</span></p>
+
+    <script>
+        
+        // ==========================================
+        // 【設定値】バイトにする前の「文字列」をハードコーディング
+        // ==========================================
+        // AES-256用キー：半角英数で「ちょうど32文字」にする必要があります（32バイト＝256bit）
+        const STRING_KEY = "CBZ!\"#$%&\'()*+,-./0123456789:;<=";
+        
+        // 初期ベクトル(IV)：半角英数で「ちょうど16文字」にする必要があります（16バイト＝128bit）
+        const STRING_IV  = "CBZ>?@[\\]^_`{|}~";
+
+
+        // ==========================================
+        // 【関数】
+        // ==========================================
+
+        // HTML読み込み時にタイムスタンプ自動取得
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('inputTimeStamp').value = getFormattedTimeStamp();
+        });
+
+        // タイムスタンプ更新ボタン
+        function reloadTimeStamp() {
+            document.getElementById('inputTimeStamp').value = getFormattedTimeStamp();
+        }
+
+
+        // Web Crypto API用の鍵オブジェクトを生成する共通関数
+        async function getCryptoKey(keyString) {
+            const encoder = new TextEncoder();
+            const keyBytes = encoder.encode(keyString);
+
+            if (keyBytes.length !== 32) {
+                throw new Error(`キーの長さが正しくありません。現在のバイト数: ${keyBytes.length} (32バイトにする必要があります)`);
+            }
+
+            return await window.crypto.subtle.importKey(
+                "raw",
+                keyBytes,
+                { name: "AES-CBC", length: 256 },
+                false,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        // 共通で使用するIV（初期ベクトル）の取得・チェック関数
+        function getIvBytes(ivString) {
+            const encoder = new TextEncoder();
+            const ivBytes = encoder.encode(ivString);
+            if (ivBytes.length !== 16) {
+                throw new Error(`IVの長さが正しくありません。現在のバイト数: ${ivBytes.length} (16バイトにする必要があります)`);
+            }
+            return ivBytes;
+        }
+
+        // 現在時刻を14桁の文字列(YYYYMMDDhhmmss)に変換する関数
+        function getFormattedTimeStamp() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mi = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+
+            const formattedCurrentTime = `${yyyy}${mm}${dd}${hh}${mi}${ss}`;
+            return formattedCurrentTime;
+        }
+
+        // ==========================================
+        // 【暗号化文字列（Cryptogram）生成】SSOトークン + タイムスタンプ の 暗号化処理
+        // ==========================================
+        async function createCryptogram() {
+
+            // ---------------------------------------
+            // フォーム取得
+            // ---------------------------------------
+
+            // SSOトークン取得
+            const ssoToken = document.getElementById("inputSsoToken").value.trim();
+            console.log('SSOトークン:', ssoToken);
+            // タイムスタンプ取得
+            const timeStamp = document.getElementById("inputTimeStamp").value.trim();
+            console.log('タイムスタンプ:', timeStamp);
+
+            if (!ssoToken) return alert("SSOトークンを入力してください");
+
+            try {
+                // 文字列を結合（SSOトークン + タイムスタンプ）
+                const combinedText = `paramCstmrNum=${ssoToken};paramTimeStamp=${timeStamp};`;
+                console.log('結合文字列（平文）:', combinedText);
+
+                // 画面上のプレーンテキスト確認欄にセット
+                document.getElementById("inputCryptogram").innerText = combinedText;
+
+                const cryptoKey = await getCryptoKey(STRING_KEY);
+                const ivBytes = getIvBytes(STRING_IV);
+
+                // 文字列をUTF-8バイト配列に
+                const encoder = new TextEncoder();
+                const dataBytes = encoder.encode(combinedText);
+
+                // 暗号化を実行
+                const encryptedBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-CBC", iv: ivBytes },
+                    cryptoKey,
+                    dataBytes
+                );
+
+                // バイナリをBase64に変換
+                const encryptedBytes = new Uint8Array(encryptedBuffer);
+                const base64Encrypted = btoa(String.fromCharCode(...encryptedBytes));
+
+                // 画面に出力（復号欄に自動セットしてテストしやすくします）
+                document.getElementById("resCryptogram").innerText = base64Encrypted;
+
+            } catch (error) {
+                console.error(error);
+                alert("暗号化エラー: " + error.message);
+            }
+        }
+
+        // ==========================================
+        // 【独立機能】暗号化処理
+        // ==========================================
+        async function executeEncrypt() {
+            const inputText = document.getElementById("inputText").value;
+            if (!inputText) return alert("暗号化する文字を入力してください");
+
+            try {
+                const cryptoKey = await getCryptoKey(STRING_KEY);
+                const ivBytes = getIvBytes(STRING_IV);
+
+                // 文字列をUTF-8バイト配列に
+                const encoder = new TextEncoder();
+                const dataBytes = encoder.encode(inputText);
+
+                // 暗号化を実行
+                const encryptedBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-CBC", iv: ivBytes },
+                    cryptoKey,
+                    dataBytes
+                );
+
+                // バイナリをBase64に変換
+                const encryptedBytes = new Uint8Array(encryptedBuffer);
+                const base64Encrypted = btoa(String.fromCharCode(...encryptedBytes));
+
+                // 画面に出力（復号欄に自動セットしてテストしやすくします）
+                document.getElementById("resOriginal").innerText = inputText;
+                document.getElementById("resEncrypted").innerText = base64Encrypted;
+                document.getElementById("resDecrypted").innerText = "-"; // クリア
+                document.getElementById("inputEncryptedBase64").value = base64Encrypted;
+
+            } catch (error) {
+                console.error(error);
+                alert("暗号化エラー: " + error.message);
+            }
+        }
+
+        // ==========================================
+        // 【独立機能】復号化処理
+        // ==========================================
+        async function executeDecrypt() {
+            const base64Input = document.getElementById("inputEncryptedBase64").value.trim();
+            if (!base64Input) return alert("復号するBase64暗号文を入力してください");
+
+            try {
+                const cryptoKey = await getCryptoKey(STRING_KEY);
+                const ivBytes = getIvBytes(STRING_IV);
+
+                // 1. 送られてきたBase64文字列を、バイナリ（Uint8Array）に逆変換
+                const binaryString = atob(base64Input);
+                const encryptedBytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    encryptedBytes[i] = binaryString.charCodeAt(i);
+                }
+
+                // 2. 復号を実行（PKCS5Paddingの解除も自動で行われます）
+                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                    { name: "AES-CBC", iv: ivBytes },
+                    cryptoKey,
+                    encryptedBytes
+                );
+
+                // 3. 復号されたバイナリデータをUTF-8の文字列に戻す
+                const decoder = new TextDecoder();
+                const decryptedText = decoder.decode(decryptedBuffer);
+
+                // 4. 画面に出力
+                document.getElementById("resOriginal").innerText = base64Input;
+                document.getElementById("resEncrypted").innerText = "-";
+                document.getElementById("resDecrypted").innerText = decryptedText;
+
+            } catch (error) {
+                console.error(error);
+                alert("復号エラー: パスワードやIVが間違っているか、暗号文のデータが壊れています。(" + error.message + ")");
+            }
+        }
+    </script>
+</body>
+</html>
