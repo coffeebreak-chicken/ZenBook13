@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Markdown Viewer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+body {
+    display: flex;
+    margin: 0;
+    height: 100vh;
+}
+
+#left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+#toolbar {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+textarea {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    outline: none;
+    resize: none;
+}
+
+#preview {
+    width: 50%;
+    padding: 1rem;
+    border-left: 1px solid #ccc;
+    overflow: auto;
+}
+</style>
+</head>
+
+<body>
+
+<div id="left">
+
+    <div id="toolbar">
+        <button id="openBtn">Markdownを開く</button>
+        <button id="reloadBtn">再読込</button>
+        <span id="fileName"></span>
+    </div>
+
+    <textarea id="editor">
+# Markdown Viewer
+    </textarea>
+
+</div>
+
+<div id="preview"></div>
+
+<script>
+const editor = document.getElementById("editor");
+const preview = document.getElementById("preview");
+const fileName = document.getElementById("fileName");
+
+let fileHandle = null;
+
+function render() {
+    preview.innerHTML = marked.parse(editor.value);
+}
+
+async function loadFile() {
+
+    if (!fileHandle) {
+        alert("ファイルが選択されていません");
+        return;
+    }
+
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+
+    editor.value = text;
+    fileName.textContent = file.name;
+
+    render();
+}
+
+document
+    .getElementById("openBtn")
+    .addEventListener("click", async () => {
+
+        const [handle] = await window.showOpenFilePicker({
+            types: [
+                {
+                    description: "Markdown",
+                    accept: {
+                        "text/markdown": [".md"]
+                    }
+                }
+            ]
+        });
+
+        fileHandle = handle;
+
+        await loadFile();
+    });
+
+document
+    .getElementById("reloadBtn")
+    .addEventListener("click", loadFile);
+
+editor.addEventListener("input", render);
+
+render();
+</script>
+
+</body>
+</html>

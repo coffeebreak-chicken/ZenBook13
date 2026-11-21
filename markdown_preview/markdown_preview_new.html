@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Viewer</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+
+
+    <style>
+    body {
+        display: flex;
+        margin: 0;
+        height: 100vh;
+    }
+    #left {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+    }
+    #toolbar {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+    textarea {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        outline: none;
+        resize: none;
+        font-family: monospace;
+    }
+    #preview {
+        width: 50%;
+        padding: 2rem;
+        border-left: 1px solid #ccc;
+        overflow: auto;
+    }
+    pre {
+        background: #f6f8fa;
+        padding: 1em;
+        border-radius: 6px;
+        overflow-x: auto;
+    }
+    code {
+        font-family: Consolas, Monaco, monospace;
+    }
+    blockquote {
+        border-left: 4px solid #d0d7de;
+        padding-left: 1em;
+        margin-left: 0;
+        color: #57606a;
+    }
+    </style>
+</head>
+
+<body>
+
+<div id="left">
+    <div id="toolbar">
+        <button id="openBtn" type="button">Markdownを開く</button>
+        <button id="reloadBtn" type="button">再読込</button>
+        <span id="fileName"></span>
+        <!-- 実際のファイル選択用（画面には表示しない） -->
+        <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display: none;">
+    </div>
+
+    <textarea id="editor"># Markdown Viewer</textarea>
+</div>
+
+<div id="preview" class="markdown-body"></div>
+
+<script>
+let currentFile = null;
+
+// HTML要素の取得
+const editor = document.getElementById("editor");
+const preview = document.getElementById("preview");
+const fileName = document.getElementById("fileName");
+const openBtn = document.getElementById("openBtn");
+const reloadBtn = document.getElementById("reloadBtn");
+const fileInput = document.getElementById("fileInput");
+
+function render() {
+    if (!editor || !preview) {
+        return;
+    }
+    const html = marked.parse(editor.value);
+    preview.innerHTML = DOMPurify.sanitize(html);
+}
+
+// ファイルを読み込んで画面に反映する関数
+function readFile(file) {
+    if (!file) {
+        alert("ファイルが選択されていません");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        editor.value = event.target.result;
+        if (fileName) {
+            fileName.textContent = file.name;
+        }
+        render();
+    };
+
+    reader.onerror = function() {
+        alert("ファイルの読み込みに失敗しました。");
+    };
+
+    reader.readAsText(file, "UTF-8");
+}
+
+// 「Markdownを開く」ボタンを押したとき
+if (openBtn && fileInput) {
+    openBtn.addEventListener("click", () => {
+        // 同じファイルを再度選び直せるように値をリセットしてから開く
+        fileInput.value = "";
+        fileInput.click();
+    });
+}
+
+// ファイルが選択されたとき
+if (fileInput) {
+    fileInput.addEventListener("change", (event) => {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            currentFile = files[0];
+            readFile(currentFile);
+        }
+    });
+}
+
+// 「再読込」ボタンを押したとき
+if (reloadBtn) {
+    reloadBtn.addEventListener("click", () => {
+        if (!currentFile) {
+            alert("ファイルが選択されていません");
+            return;
+        }
+        readFile(currentFile);
+    });
+}
+
+// テキストエリア編集時のリアルタイムプレビュー
+if (editor) {
+    editor.addEventListener("input", render);
+}
+
+// 初期描画
+render();
+</script>
+
+</body>
+</html>
